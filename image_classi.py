@@ -84,7 +84,6 @@ def img_classi():
 
     print("Predicting...")
     pred = model.predict_generator(test_generator, verbose=1, steps=len(test_generator))
-    pred.save("prediction.txt")
     print("Prediction is " + str(pred))
 
 
