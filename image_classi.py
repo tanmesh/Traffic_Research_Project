@@ -10,6 +10,9 @@ from matplotlib.pyplot import imshow
 from sklearn.model_selection import train_test_split
 
 from process_data import split_data, prepare_data
+import os
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 
 def build_model(img_width, img_height):
@@ -68,6 +71,7 @@ def img_classi():
     print("Splitting the train data into training and validation set...")
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=1)
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=1)
+
     n_train = len(x_train)
     n_val = len(x_val)
     batch_size = 16
@@ -85,7 +89,7 @@ def img_classi():
     validation_generator = val_data_gen.flow(np.array(x_val), y_val, batch_size=batch_size)
 
     print('Fitting the model...')
-    model.fit_generator(train_generator, steps_per_epoch=n_train // batch_size, epochs=1,
+    model.fit_generator(train_generator, steps_per_epoch=n_train // batch_size, epochs=32,
                         validation_data=validation_generator, validation_steps=n_val // batch_size)
 
     print('Saving the model...')
