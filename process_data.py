@@ -31,6 +31,10 @@ def split_data():
 
     # print(len(img1))
     # print(len(img2))
+<<<<<<< HEAD
     total_img_data = img1 + img2
+=======
+    total_img_data = img1[:2000] + img2[6000:8000]
+>>>>>>> 1a71d4b17eab4f840491374b6dcf87c6f03701d4
     # print(len(total_img_data))
     return total_img_data
