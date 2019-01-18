@@ -1,16 +1,12 @@
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
+import imageio as imageio
 import numpy as np
 import pandas as pd
-from keras.layers import Activation
-from keras.layers import Conv2D
-from keras.layers import Dense
-from keras.layers import Flatten
-from keras.layers import MaxPooling2D
-from keras.models import Sequential
-from keras_applications.imagenet_utils import preprocess_input
-from keras_preprocessing import image
+from keras import Sequential
+from keras.applications.imagenet_utils import preprocess_input
+from keras.layers import Dense, Activation, Flatten, Conv2D, MaxPooling2D
+from keras.preprocessing import image
 from keras_preprocessing.image import ImageDataGenerator
+from matplotlib.pyplot import imshow
 from sklearn.model_selection import train_test_split
 
 from process_data import split_data, prepare_data
@@ -50,19 +46,30 @@ def build_model(img_width, img_height):
     return model
 
 
+def do_prediction(img_path, model):
+    img = image.load_img(img_path, target_size=(150, 150))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+    my_image = imageio.imread(img_path)
+    imshow(my_image)
+    print(model.predict(x))
+
+
 def img_classi():
     print("Splitting data into train and test...")
     total_img_data = split_data()
     img_width = 150
     img_height = 150
+
     print("Preparing the train data...")
     x, y = prepare_data(total_img_data, img_width, img_height)
+
     print("Splitting the train data into training and validation set...")
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=1)
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=1)
     n_train = len(x_train)
     n_val = len(x_val)
-
     batch_size = 16
 
     print("Building the model..")
@@ -78,7 +85,7 @@ def img_classi():
     validation_generator = val_data_gen.flow(np.array(x_val), y_val, batch_size=batch_size)
 
     print('Fitting the model...')
-    model.fit_generator(train_generator, steps_per_epoch=n_train // batch_size, epochs=2,
+    model.fit_generator(train_generator, steps_per_epoch=n_train // batch_size, epochs=1,
                         validation_data=validation_generator, validation_steps=n_val // batch_size)
 
     print('Saving the model...')
@@ -95,13 +102,9 @@ def img_classi():
     # print("Prediction is " + str(pred))
     prediction = pd.DataFrame(pred, columns=['predictions']).to_csv('prediction.csv')
 
-    img = mpimg.imread('download.jpeg')
-    imgplot = plt.imshow(img)
-    plt.show()
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-    print(model.predict(x))
+    print("Predicting for input image...")
+    image_path = "/Users/tanmesh/dev/traffic/download.jpg"
+    do_prediction(image_path, model)
 
 
 img_classi()
