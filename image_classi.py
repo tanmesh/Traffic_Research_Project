@@ -1,18 +1,17 @@
+import os
+
 import imageio as imageio
 import numpy as np
-import pandas as pd
 from keras import Sequential
 from keras.applications.imagenet_utils import preprocess_input
 from keras.layers import Dense, Activation, Flatten, Conv2D, MaxPooling2D
 from keras.preprocessing import image
-from keras_preprocessing.image import ImageDataGenerator
 from matplotlib.pyplot import imshow
 from sklearn.model_selection import train_test_split
 
 from process_data import split_data, prepare_data
-import os
 
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 def build_model(img_width, img_height):
@@ -49,7 +48,7 @@ def build_model(img_width, img_height):
     return model
 
 
-def do_prediction(img_path, model):
+def do_prediction(model, img_path):
     img = image.load_img(img_path, target_size=(150, 150))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
@@ -70,45 +69,66 @@ def img_classi():
 
     print("Splitting the train data into training and validation set...")
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=1)
-    x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=1)
+    # x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=1)
 
     n_train = len(x_train)
     n_val = len(x_val)
-    batch_size = 16
+    print("ntrain is %d" % n_train)
+    print("nval is %d" % n_val)
+    batch_size = 120
+    epoch = 2
 
     print("Building the model..")
     model = build_model(img_width, img_height)
+    print(model.__str__())
     print("Model build.")
 
-    print('Data augmentation...')
-    train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
-    val_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+    # print('Data augmentation...')
+    # train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+    # val_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+    #
+    # print('Preparing generators for training and validation sets...')
+    # train_generator = train_data_gen.flow(np.array(x_train), y_train, batch_size=batch_size)
+    # validation_generator = val_data_gen.flow(np.array(x_val), y_val, batch_size=batch_size)
 
-    print('Preparing generators for training and validation sets...')
-    train_generator = train_data_gen.flow(np.array(x_train), y_train, batch_size=batch_size)
-    validation_generator = val_data_gen.flow(np.array(x_val), y_val, batch_size=batch_size)
+    x_train = np.array(x_train)
+    x_val = np.array(x_val)
+
+    print("Normalize data...")
+    x_train = x_train / 255.0
+    x_val = x_val / 255.0
+
+    print("Reshape data...")
+    x_train = x_train.reshape(-1, 150, 150, 3)
+    x_val = x_val.reshape(-1, 150, 150, 3)
 
     print('Fitting the model...')
-    model.fit_generator(train_generator, steps_per_epoch=n_train // batch_size, epochs=32,
-                        validation_data=validation_generator, validation_steps=n_val // batch_size)
+    model.fit(x_train, y_train, batch_size, epoch)
+    model.save('model_keras.csv')  ## serialising and saving the data
 
-    print('Saving the model...')
-    model.save_weights('model_weights.csv')
-    model.save('model_keras.csv')
-    print("Model saved...")
+    score = model.evaluate(x_val, y_val)
+    for items in score:
+        print(items)
+    # print("Validation accuracy is %d" % score)
 
-    print('Generating test data...')
-    test_data_gen = ImageDataGenerator(rescale=1. / 255)
-    test_generator = test_data_gen.flow(np.array(x_test), batch_size=batch_size)
-
-    print("Predicting...")
-    pred = model.predict_generator(test_generator, verbose=1, steps=len(test_generator))
-    # print("Prediction is " + str(pred))
-    prediction = pd.DataFrame(pred, columns=['predictions']).to_csv('prediction.csv')
+    # print('Saving the model...')
+    # model.save_weights('model_weights.csv')
+    # model.save('model_keras.csv')
+    # print("Model saved...")
+    #
+    # print('Generating test data...')
+    # test_data_gen = ImageDataGenerator(rescale=1. / 255)
+    # test_generator = test_data_gen.flow(np.array(x_test), batch_size=batch_size)
+    #
+    # print("Predicting...")
+    # pred = model.predict_generator(test_generator, verbose=1, steps=len(test_generator))
+    # # print("Prediction is " + str(pred))
+    # prediction = pd.DataFrame(pred, columns=['predictions']).to_csv('prediction.csv')
 
     print("Predicting for input image...")
-    image_path = "/Users/tanmesh/dev/traffic/download.jpg"
-    do_prediction(image_path, model)
+
+    do_prediction(model)
 
 
 img_classi()
+do_prediction("")
