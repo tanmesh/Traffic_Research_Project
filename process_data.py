@@ -29,11 +29,12 @@ def split_data():
     test_dir = "/Users/tanmesh/dev/traffic/dataset/vehicles_test/"
     img1 = [train_dir + i for i in os.listdir(train_dir)]
     img2 = [test_dir + i for i in os.listdir(test_dir)]
-    img1 = img1[0:1000]
-    img2 = img2[0:1000]
+    img1 = img1[0:100]
+    img2 = img2[0:100]
 
     # print(len(img1))
     # print(len(img2))
     total_img_data = img1 + img2
     # print(len(total_img_data))
-    return total_img_data
+    test_examples = train_examples = 100
+    return total_img_data, test_examples, train_examples
