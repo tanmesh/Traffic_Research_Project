@@ -25,8 +25,8 @@ def prepare_data(list_of_images_path, img_width, img_height):
 
 
 def split_data():
-    train_dir = "/Users/nilmish/Downloads/vehicles_train/"
-    test_dir = "/Users/nilmish/Downloads/vehicles_test/"
+    train_dir = "/Users/tanmesh/dev/traffic/dataset/vehicles_train/"
+    test_dir = "/Users/tanmesh/dev/traffic/dataset/vehicles_test/"
     img1 = [train_dir + i for i in os.listdir(train_dir)]
     img2 = [test_dir + i for i in os.listdir(test_dir)]
     img1 = img1[0:1000]
