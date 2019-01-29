@@ -22,9 +22,9 @@ def get_training_data():
     for dataset in data_dir_list:
         img_list = os.listdir(data_dir_path + '/' + dataset)
 
-        # reading only 100 entries
-        img_list = img_list[0:50]
-        print('Loaded the images of dataset-' + '{}\n'.format(dataset))
+        # reading only 1000 entries
+        img_list = img_list[0:500]
+        print('Loaded the images of dataset- ' + '{}\n'.format(dataset))
         for img in img_list:
             if 'not_vehicle' in img:
                 labels.append(0)
@@ -96,7 +96,7 @@ def classify_vehicle():
     # create training model using keras pre-training image classification model resnet50
     model = get_training_model()
 
-    # we will use RMSprop with learning rate .0001 and binary_crossentropy for binary classification
+    # we will use RMS prop with learning rate .0001 and binary_crossentropy for binary classification
     model.compile(loss='binary_crossentropy', optimizer=optimizers.RMSprop(lr=2e-5), metrics=['accuracy'])
 
     # train the model
