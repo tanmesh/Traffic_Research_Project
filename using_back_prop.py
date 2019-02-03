@@ -4,6 +4,7 @@ from tensorflow.python.keras import Sequential, optimizers
 from tensorflow.python.layers.core import Dense
 import matplotlib.pyplot as plt
 from load_dataset import get_training_data, test_model
+import numpy as np
 
 
 def evaluate_model(history):
@@ -18,8 +19,21 @@ def evaluate_model(history):
     plt.show()
 
 
+def build_model():
+    model = Sequential()
+    model.add(Dense(32, input_dim=(16,), activation="relu"))
+    model.add(Dense(16, activation="relu"))
+    model.add(Dense(1, activation="sigmoid"))
+    return model
+
+
 def using_back_prop(img_set_size):
     x_train, x_test, y_train, y_test, classes = get_training_data(img_set_size, partition_ratio=0.2, img_size=64)
+
+    print(type(x_train))
+    print(type(x_test))
+    print(type(y_train))
+    print(type(y_test))
 
     # img = image.img_to_array(x_train[0])
     # plt.imshow(img / 255.)
@@ -57,8 +71,7 @@ def using_back_prop(img_set_size):
     # n_h = 7
     # n_y = 1
 
-    model = Sequential()
-    model.add(Dense(32, input_shape=(16,)))
+    model = build_model()
 
     model.compile(loss='binary_crossentropy', optimizer=optimizers.RMSprop(lr=2e-5), metrics=['accuracy'])
     hist = model.fit(x_train, y_train, batch_size=32, epochs=2, validation_data=(x_test, y_test))
@@ -77,4 +90,6 @@ def using_back_prop(img_set_size):
     test_model(model, test_image_path)
 
 
+# fix random seed for reproducibility
+np.random.seed(7)
 using_back_prop(img_set_size=50)
