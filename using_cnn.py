@@ -1,11 +1,11 @@
 import time
 
 import matplotlib.pyplot as plt
+import pandas as pd
 from keras import Sequential
 from keras import optimizers
 from keras.applications.resnet50 import ResNet50
 from keras.layers import Dense, Flatten
-from sklearn.model_selection import train_test_split
 
 from load_dataset import get_training_data, test_model
 
@@ -37,11 +37,8 @@ def evaluate_model(history):
 
 
 def classify_vehicle(img_set_size):
-    # loading data from disk
-    x, y = get_training_data(img_set_size)
-
     # creating training and validation set
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=2)
+    x_train, x_test, y_train, y_test, classes = get_training_data(img_set_size, partition_ratio=0.2, img_size=224)
 
     # create training model using keras pre-training image classification model resnet50
     model = get_training_model()
@@ -55,6 +52,16 @@ def classify_vehicle(img_set_size):
     print('Training time: %s' % (t - time.time()))
     (loss, accuracy) = model.evaluate(x_test, y_test, batch_size=32, verbose=1)
     print("[INFO] loss={:.4f}, accuracy: {:.4f}%".format(loss, accuracy * 100))
+    if img_set_size == 50:
+        df.loc[0, "50 data-size"] = accuracy*100
+    elif img_set_size == 2000:
+        df.loc[1, "2000 data-size"] = accuracy*100
+    elif img_set_size == 4000:
+        df.loc[2, "4000 data-size"] = accuracy*100
+    elif img_set_size == 6000:
+        df.loc[3, "6000 data-size"] = accuracy*100
+    else:
+        df.loc[4, "8000 data-size"] = accuracy*100
 
     # plot accuracy and loss for model
     evaluate_model(hist)
@@ -72,8 +79,11 @@ def classify_vehicle(img_set_size):
     test_model(model, test_image_path)
 
 
-classify_vehicle(img_set_size=50)
-classify_vehicle(img_set_size=2000)
-classify_vehicle(img_set_size=4000)
-classify_vehicle(img_set_size=6000)
-classify_vehicle(img_set_size=8000)
+df = pd.DataFrame(columns=["50 data-size", "2000 data-size", "4000 data-size", "6000 data-size", "8000 data-size"])
+classify_vehicle(img_set_size=100//2)
+classify_vehicle(img_set_size=2000//2)
+classify_vehicle(img_set_size=4000//2)
+classify_vehicle(img_set_size=6000//2)
+classify_vehicle(img_set_size=8000//2)
+print(df)
+df.to_csv("accuracy_table.csv")
