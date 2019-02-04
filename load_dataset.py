@@ -33,13 +33,13 @@ def get_training_data(img_set_size, partition_ratio, img_size):
             img_data_list.append(x)
 
     img_data = np.array(img_data_list)
-    print(img_data.shape)
+    # print(img_data.shape)
     img_data = np.rollaxis(img_data, 1, 0)
-    print(img_data.shape)
+    # print(img_data.shape)
     img_data = img_data[0]
-    print(img_data.shape)
+    # print(img_data.shape)
 
-    print(type(labels))
+    # print(type(labels))
     # shuffle the positive and negative data
     x, y = shuffle(img_data, labels)
 

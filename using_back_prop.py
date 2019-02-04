@@ -21,19 +21,20 @@ def evaluate_model(history):
 
 def build_model():
     model = Sequential()
-    model.add(Dense(32, input_dim=(16,), activation="relu"))
-    model.add(Dense(16, activation="relu"))
-    model.add(Dense(1, activation="sigmoid"))
+    model.add(Dense(256, activation='relu'))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    # print(model.summary())
     return model
 
 
 def using_back_prop(img_set_size):
     x_train, x_test, y_train, y_test, classes = get_training_data(img_set_size, partition_ratio=0.2, img_size=64)
 
-    print(type(x_train))
-    print(type(x_test))
-    print(type(y_train))
-    print(type(y_test))
+    # print(type(x_train))
+    # print(type(x_test))
+    # print(type(y_train))
+    # print(type(y_test))
 
     # img = image.img_to_array(x_train[0])
     # plt.imshow(img / 255.)
@@ -46,26 +47,23 @@ def using_back_prop(img_set_size):
     # print(y_train[0])
     # print(y_test[0])
 
-    m_train = x_train.shape[0]
-    num_px = x_train.shape[1]
-    m_test = x_test.shape[0]
+    # m_train = x_train.shape[0]
+    # num_px = x_train.shape[1]
+    # m_test = x_test.shape[0]
+    #
+    # print("Number of training examples: " + str(m_train))
+    # print("Number of testing examples: " + str(m_test))
+    # print("Each image is of size: (" + str(num_px) + ", " + str(num_px) + ", 3)")
+    # print("train_x_orig shape: " + str(x_train.shape))
+    # print("train_y shape: " + str(y_train))
+    # print("test_x_orig shape: " + str(x_test.shape))
+    # print("test_y shape: " + str(y_test))
 
-    print("Number of training examples: " + str(m_train))
-    print("Number of testing examples: " + str(m_test))
-    print("Each image is of size: (" + str(num_px) + ", " + str(num_px) + ", 3)")
-    print("train_x_orig shape: " + str(x_train.shape))
-    print("train_y shape: " + str(y_train))
-    print("test_x_orig shape: " + str(x_test.shape))
-    print("test_y shape: " + str(y_test))
+    x_train = x_train/255.
+    x_test = x_test / 255.
 
-    x_train_flatten = x_train.reshape(x_train.shape[0], -1).T
-    x_test_flatten = x_test.reshape(x_test.shape[0], -1).T
-
-    x_train = x_train_flatten/255.
-    x_test = x_test_flatten / 255.
-
-    print("train_x's shape: " + str(x_train.shape))
-    print("test_x's shape: " + str(x_test.shape))
+    # print("train_x's shape: " + str(x_train.shape))
+    # print("test_x's shape: " + str(x_test.shape))
 
     # n_x = num_px * num_px * 3
     # n_h = 7
@@ -74,8 +72,8 @@ def using_back_prop(img_set_size):
     model = build_model()
 
     model.compile(loss='binary_crossentropy', optimizer=optimizers.RMSprop(lr=2e-5), metrics=['accuracy'])
-    hist = model.fit(x_train, y_train, batch_size=32, epochs=2, validation_data=(x_test, y_test))
-    print('Training time: %s' % (t - time.time()))
+    hist = model.fit(x_train, y_train, batch_size=32, epochs=2, validation_data=(x_test, y_test), validation_split=0)
+    # print('Training time: %s' % (t - time.time()))
     (loss, accuracy) = model.evaluate(x_test, y_test, batch_size=32, verbose=1)
     print("[INFO] loss={:.4f}, accuracy: {:.4f}%".format(loss, accuracy * 100))
 
