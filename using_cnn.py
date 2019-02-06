@@ -2,6 +2,7 @@ import time
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from keras import Sequential
 from keras import optimizers
 from keras.applications.resnet50 import ResNet50
@@ -10,9 +11,9 @@ from keras.layers import Dense, Flatten
 from load_dataset import get_training_data, test_model
 
 
-def get_training_model():
+def get_training_model(img_size):
     # use keras model with pre-trained weights
-    resnet = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+    resnet = ResNet50(weights='imagenet', include_top=False, input_shape=(img_size, img_size, 3))
 
     # creating model for vehicle classifier
     model = Sequential()
@@ -20,7 +21,7 @@ def get_training_model():
     model.add(Flatten())
     model.add(Dense(256, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
-    print(model.summary())
+    # print(model.summary())
     return model
 
 
@@ -38,10 +39,11 @@ def evaluate_model(history):
 
 def classify_vehicle(img_set_size):
     # creating training and validation set
-    x_train, x_test, y_train, y_test, classes = get_training_data(img_set_size, partition_ratio=0.2, img_size=224)
+    img_size = 64
+    x_train, x_test, y_train, y_test, classes = get_training_data(img_set_size, partition_ratio=0.2, img_size=img_size)
 
     # create training model using keras pre-training image classification model resnet50
-    model = get_training_model()
+    model = get_training_model(img_size)
 
     # we will use RMS prop with learning rate .0001 and binary_crossentropy for binary classification
     model.compile(loss='binary_crossentropy', optimizer=optimizers.RMSprop(lr=2e-5), metrics=['accuracy'])
@@ -55,13 +57,13 @@ def classify_vehicle(img_set_size):
     if img_set_size == 50:
         df.loc[0, "50 data-size"] = accuracy*100
     elif img_set_size == 2000:
-        df.loc[1, "2000 data-size"] = accuracy*100
+        df.loc[0, "2000 data-size"] = accuracy*100
     elif img_set_size == 4000:
-        df.loc[2, "4000 data-size"] = accuracy*100
+        df.loc[0, "4000 data-size"] = accuracy*100
     elif img_set_size == 6000:
-        df.loc[3, "6000 data-size"] = accuracy*100
+        df.loc[0, "6000 data-size"] = accuracy*100
     else:
-        df.loc[4, "8000 data-size"] = accuracy*100
+        df.loc[0, "8000 data-size"] = accuracy*100
 
     # plot accuracy and loss for model
     evaluate_model(hist)
@@ -72,18 +74,20 @@ def classify_vehicle(img_set_size):
 
     # negative scenario
     test_image_path = '/Users/tanmesh/dev/traffic/vehicles_test/4593_not_vehicle.jpg'
-    test_model(model, test_image_path)
+    test_model(model, test_image_path, img_size)
 
     # positive scenario
     test_image_path = '/Users/tanmesh/dev/traffic/vehicles_train/02033_vehicle.jpg'
-    test_model(model, test_image_path)
+    test_model(model, test_image_path, img_size)
+
+    print(df)
+    df.to_csv("accuracy_table_using_CNN.csv")
 
 
+np.random.seed(7)
 df = pd.DataFrame(columns=["50 data-size", "2000 data-size", "4000 data-size", "6000 data-size", "8000 data-size"])
-classify_vehicle(img_set_size=100//2)
-classify_vehicle(img_set_size=2000//2)
-classify_vehicle(img_set_size=4000//2)
-classify_vehicle(img_set_size=6000//2)
-classify_vehicle(img_set_size=8000//2)
-print(df)
-df.to_csv("accuracy_table.csv")
+classify_vehicle(img_set_size=50)
+classify_vehicle(img_set_size=2000)
+classify_vehicle(img_set_size=4000)
+classify_vehicle(img_set_size=6000)
+classify_vehicle(img_set_size=8000)
