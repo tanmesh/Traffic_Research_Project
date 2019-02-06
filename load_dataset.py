@@ -1,11 +1,11 @@
 import os
-from sklearn.utils import shuffle
 
 import matplotlib.pyplot as plt
 import numpy as np
 from keras.applications.imagenet_utils import preprocess_input
 from keras_preprocessing import image
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 
 
 def get_training_data(img_set_size, partition_ratio, img_size):
@@ -50,8 +50,22 @@ def get_training_data(img_set_size, partition_ratio, img_size):
     return x_train, x_test, y_train, y_test, classes
 
 
-def test_model(model, image_path):
-    img = image.load_img(image_path, target_size=(224, 224))
+def test_back_prop_model(model, image_path, img_size):
+    img = image.load_img(image_path, target_size=(img_size, img_size))
+    img = image.img_to_array(img)
+    plt.imshow(img / 255.)
+    plt.show()
+    x = preprocess_input(np.expand_dims(img.copy(), axis=0))
+    print("test image shape : " + str(x.shape))
+    height = x.shape[1]
+    width = x.shape[2]
+    n_channels = x.shape[3]
+    x = x.reshape((1, height * width * n_channels))
+    print(model.predict(x))
+
+
+def test_model(model, image_path, img_size):
+    img = image.load_img(image_path, target_size=(img_size, img_size))
     img = image.img_to_array(img)
     plt.imshow(img / 255.)
     plt.show()

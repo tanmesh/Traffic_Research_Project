@@ -1,10 +1,11 @@
 import time
 
+import matplotlib.pyplot as plt
+import numpy as np
 from tensorflow.python.keras import Sequential, optimizers
 from tensorflow.python.layers.core import Dense
-import matplotlib.pyplot as plt
-from load_dataset import get_training_data, test_model
-import numpy as np
+import pandas as pd
+from load_dataset import get_training_data, test_back_prop_model
 
 
 def evaluate_model(history):
@@ -19,75 +20,73 @@ def evaluate_model(history):
     plt.show()
 
 
-def build_model():
+def build_model(h, w, n_c):
     model = Sequential()
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    # print(model.summary())
+    model.add(Dense(128, input_dim=h * w * n_c, activation="relu"))
+    model.add(Dense(128, activation="relu"))
+    model.add(Dense(1, activation="sigmoid"))
     return model
 
 
 def using_back_prop(img_set_size):
-    x_train, x_test, y_train, y_test, classes = get_training_data(img_set_size, partition_ratio=0.2, img_size=64)
+    img_size = 64
+    x_train, x_test, y_train, y_test, classes = get_training_data(img_set_size, partition_ratio=0.2, img_size=img_size)
 
-    # print(type(x_train))
-    # print(type(x_test))
-    # print(type(y_train))
-    # print(type(y_test))
+    n_train = x_train.shape[0]
+    n_test = x_test.shape[0]
+    height = x_train.shape[1]
+    width = x_train.shape[2]
+    n_channels = x_train.shape[3]
+    print(n_train, n_test, height, width, n_channels)
 
-    # img = image.img_to_array(x_train[0])
-    # plt.imshow(img / 255.)
-    # plt.show()
-    #
-    # img = image.img_to_array(x_test[0])
-    # plt.imshow(img / 255.)
-    # plt.show()
-    #
-    # print(y_train[0])
-    # print(y_test[0])
+    x_train = x_train.reshape((n_train, height * width * n_channels))
+    x_test = x_test.reshape((n_test, height * width * n_channels))
+    print("train_x's shape: " + str(x_train.shape))
+    print("test_x's shape: " + str(x_test.shape))
 
-    # m_train = x_train.shape[0]
-    # num_px = x_train.shape[1]
-    # m_test = x_test.shape[0]
-    #
-    # print("Number of training examples: " + str(m_train))
-    # print("Number of testing examples: " + str(m_test))
-    # print("Each image is of size: (" + str(num_px) + ", " + str(num_px) + ", 3)")
-    # print("train_x_orig shape: " + str(x_train.shape))
-    # print("train_y shape: " + str(y_train))
-    # print("test_x_orig shape: " + str(x_test.shape))
-    # print("test_y shape: " + str(y_test))
+    # x_train = x_train_flatten/255.
+    # x_test = x_test_flatten / 255.
 
-    x_train = x_train/255.
-    x_test = x_test / 255.
-
-    # print("train_x's shape: " + str(x_train.shape))
-    # print("test_x's shape: " + str(x_test.shape))
-
-    # n_x = num_px * num_px * 3
-    # n_h = 7
-    # n_y = 1
-
-    model = build_model()
+    model = build_model(height, width, n_channels)
 
     model.compile(loss='binary_crossentropy', optimizer=optimizers.RMSprop(lr=2e-5), metrics=['accuracy'])
-    hist = model.fit(x_train, y_train, batch_size=32, epochs=2, validation_data=(x_test, y_test), validation_split=0)
-    # print('Training time: %s' % (t - time.time()))
+    t = time.time()
+    hist = model.fit(x_train, y_train, batch_size=32, epochs=2, validation_data=(x_test, y_test))
+    print('Training time: %s' % (t - time.time()))
     (loss, accuracy) = model.evaluate(x_test, y_test, batch_size=32, verbose=1)
     print("[INFO] loss={:.4f}, accuracy: {:.4f}%".format(loss, accuracy * 100))
 
     evaluate_model(hist)
 
+    if img_set_size == 50:
+        df.loc[0, "50 data-size"] = accuracy*100
+    elif img_set_size == 2000:
+        df.loc[0, "2000 data-size"] = accuracy*100
+    elif img_set_size == 4000:
+        df.loc[0, "4000 data-size"] = accuracy*100
+    elif img_set_size == 6000:
+        df.loc[0, "6000 data-size"] = accuracy*100
+    else:
+        df.loc[0, "8000 data-size"] = accuracy*100
+
     # negative scenario
     test_image_path = '/Users/tanmesh/dev/traffic/vehicles_test/4593_not_vehicle.jpg'
-    test_model(model, test_image_path)
+    test_back_prop_model(model, test_image_path, img_size)
 
     # positive scenario
     test_image_path = '/Users/tanmesh/dev/traffic/vehicles_train/02033_vehicle.jpg'
-    test_model(model, test_image_path)
+    test_back_prop_model(model, test_image_path, img_size)
+
+    print(df)
+    df.to_csv("accuracy_table_using_BP.csv")
 
 
 # fix random seed for reproducibility
 np.random.seed(7)
+df = pd.DataFrame(columns=["50 data-size", "2000 data-size", "4000 data-size", "6000 data-size", "8000 data-size"])
 using_back_prop(img_set_size=50)
+using_back_prop(img_set_size=2000)
+using_back_prop(img_set_size=4000)
+using_back_prop(img_set_size=6000)
+using_back_prop(img_set_size=8000)
+
